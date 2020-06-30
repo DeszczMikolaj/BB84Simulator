@@ -1,1 +1,1 @@
-# BB84Simulator
+# BB84 Simulator
