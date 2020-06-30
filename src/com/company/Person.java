@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Person {
+    // variable definitions
     public int[] key ;
     public String[] base;
     public static int size;
