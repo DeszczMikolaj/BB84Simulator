@@ -4,14 +4,15 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Person {
-    // variable definitions
     public int[] key ;
     public String[] base;
     public static int size;
     private static int detectorNoise;
     private boolean isBadGuy;
-    private  Object STRATEGY;
+    private  Object STRATEGY; // dotyczy Eve, osoby podsłuchującej - czy podsłuchuje wszystko czy seriami
     private Qubit[] recivedQubits;
+
+    //Bob i Alice - konstruktor
     public Person(int size, int detectorNoise, boolean isBadGuy) {
         Person.size = size;
         base = new String[size];
@@ -20,6 +21,7 @@ public class Person {
         this.isBadGuy = isBadGuy;
     }
 
+    //Eve (bo umożliwia wybór strategii podsłuchiwania) - konstruktor
     public Person(int size, int detectorNoise, boolean isBadGuy, Object STRATEGY) {
         Person.size = size;
         base = new String[size];
@@ -29,7 +31,7 @@ public class Person {
         this.STRATEGY = STRATEGY;
     }
 
-
+    //losowanie liczb losowych do tabeli
     public int[] getRandomNumbers(int bound , int size){
         int[] randomNumberTable = new int[size];
         Random r = new Random();
@@ -38,6 +40,8 @@ public class Person {
         }
         return randomNumberTable;
     }
+
+    //ustalanie losowej bazy
     public void setBase(){
         int[] randomBits = getRandomNumbers(1,size);
         for(int i=0; i<size;i++){
@@ -46,9 +50,11 @@ public class Person {
         }
     }
 
+    //dekodowanie przez Boba lub Eve
     public int[] decode(Qubit[] encryptedBits) {
         setBase();
         recivedQubits=encryptedBits;
+        //strategia ALL
         if (!isBadGuy || STRATEGY == Strategy.ALL) {
             for (int i = 0; i < size; i++) {
                 if (base[i] == encryptedBits[i].base) {
@@ -63,6 +69,7 @@ public class Person {
                     else key[i] = 1;
                 }
             }
+        //strategia SERIES
         } else if (STRATEGY == Strategy.SERIES) {
             final int howManyInOneSerie = size / 10;
             final int spaceBeetwenSeries = 2 * howManyInOneSerie;
@@ -77,7 +84,7 @@ public class Person {
                         key[i] = randomNumber[0];
                     }
                     int[] randomNumber = getRandomNumbers(100, 1);
-                    if (randomNumber[0] > detectorNoise) {
+                    if (randomNumber[0] < detectorNoise) {
                         if (key[i] == 1) key[i] = 0;
                         else key[i] = 1;
                     }
@@ -95,8 +102,7 @@ public class Person {
         return key;
     }
 
-    //Uwaga do README: dla strategi ataku innej niż ALL należy pamiętać, że część qubitów została nienaruszonych
-
+    //kodowanie przez Alice lub Eve
     public Qubit[] encode(){
         Qubit[] encodedBits = new Qubit[size];
         if (!isBadGuy || STRATEGY == Strategy.ALL) {
